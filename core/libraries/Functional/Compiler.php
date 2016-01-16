@@ -15,19 +15,22 @@ class Compiler {
 
     public static function compile($pattern, $withReturn = false) {
 
-        $hash = self::getPatternHash($pattern);
+        $hash = self::getPatternHash($pattern.":".($withReturn?1:0));
 
         if (!isset(self::$phCache[$hash])) {
 
             $args = [];
 
+            // todo: optimize without using regular expressions
             $body = preg_replace_callback('~_~', function () use (&$args) {
                 $argName = '$a' . count($args);
-                array_push($args, $argName);
+                $args[] = $argName;
                 return $argName;
             }, $pattern);
 
             $functionBody = 'return function('.implode(',', $args).'){'.($withReturn?'return ':'').$body.';};';
+
+            $body = preg_replace_callback('~[a-z]+(\.)~', function ($match) { return '=>'; }, $body);
 
             self::$phCache[$hash] = eval($functionBody);
 
