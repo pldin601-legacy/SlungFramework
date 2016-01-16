@@ -13,7 +13,7 @@ class Compiler {
 
     private static $phCache = [];
 
-    public static function compile($pattern) {
+    public static function compile($pattern, $withReturn = false) {
 
         $hash = self::getPatternHash($pattern);
 
@@ -27,7 +27,7 @@ class Compiler {
                 return $argName;
             }, $pattern);
 
-            $functionBody = 'return function(' . implode(',', $args) . '){return ' . $body . ';};';
+            $functionBody = 'return function('.implode(',', $args).'){'.($withReturn?'return ':'').$body.';};';
 
             self::$phCache[$hash] = eval($functionBody);
 
@@ -37,12 +37,11 @@ class Compiler {
 
     }
 
-    public static function getCallableObject($function) {
-
+    public static function getCallableObject($function, $withReturn = true) {
 
         switch (gettype($function)) {
             case 'string':
-                return function_exists($function) ? $function : self::compile($function);
+                return function_exists($function) ? $function : self::compile($function, $withReturn);
             case 'array':
                 if (count($function) == 2) {
                     if (class_exists($function[0]) || is_object($function[0])) {
