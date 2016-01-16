@@ -30,7 +30,8 @@ class Compiler {
 
             $functionBody = 'return function('.implode(',', $args).'){'.($withReturn?'return ':'').$body.';};';
 
-            $body = preg_replace_callback('~[a-z]+(\.)~', function ($match) { return '=>'; }, $body);
+//            $body = preg_replace_callback('~\$[a-z0-9_]+(\.)~i', function () { return '=>'; }, $body);
+            $body = preg_replace_callback('~[a-z]+(\.)~i', function () { return '::'; }, $body);
 
             self::$phCache[$hash] = eval($functionBody);
 
