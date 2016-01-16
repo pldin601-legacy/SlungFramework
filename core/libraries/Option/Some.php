@@ -180,7 +180,7 @@ class Some extends Option {
      * @return $this
      */
     public function then($callable) {
-        call_user_func(Compiler::getCallableObject($callable));
+        call_user_func(Compiler::getCallableObject($callable), $this->get());
         return $this;
     }
 
