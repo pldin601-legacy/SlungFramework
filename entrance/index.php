@@ -1,8 +1,10 @@
 <?php
 
+use Functional\Types\Collection;
+
 require_once "../core/framework/init.php";
 
-$collection = [
+$collection = new Collection([
     [
         "id" => 0,
         "name" => "Bob",
@@ -18,9 +20,15 @@ $collection = [
         "name" => "John",
         "age" => 21
     ]
-];
-
-uasort($collection, compile("$['age'] - $['age']"));
+]);
 
 header("Content-Type: text/plain");
-print_r($collection);
+
+echo $collection                // Original collection of persons
+    ->map("(object) $")         // Cast all persons to objects
+    ->sort("$.age > $.age")     // Sort persons by age
+    ->filter("$.age >= 18")     // Filter only adults
+    ->map("$.name")             // Get person names
+    ->join(", ");               // Get list of names joined by comma delimiter
+
+
