@@ -25,10 +25,8 @@ $collection = new Collection([
 header("Content-Type: text/plain");
 
 echo $collection                // Original collection of persons
-    ->map("(object) $")         // Cast all persons to objects
-    ->filter("$.age >= 18")     // Filter only adults
-    ->sort("$.age > $.age")     // Sort persons by age
-    ->map("$.name")             // Get person names
-    ->join(", ");               // Get list of names joined by comma delimiter
-
-
+    ->map('(object) $')         // Cast all persons to objects
+    ->filter('$.age >= 18')     // Filter only adults
+    ->sort('$.age > $.age')     // Sort persons by age
+    ->map('$.name')             // Get person names
+    ->join(', ');               // Get list of names joined by comma delimiter
