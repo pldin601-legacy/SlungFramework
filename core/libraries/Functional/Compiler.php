@@ -21,17 +21,25 @@ class Compiler {
 
             $args = [];
 
-            // todo: optimize without using regular expressions
-            $body = preg_replace_callback('~_~', function () use (&$args) {
+            if (strpos($pattern, "$", 0) === false) {
+                throw new \Exception("No placeholder in pattern");
+            }
+            $parts = explode("$", $pattern);
+            $compiledPattern = "";
+            foreach ($parts as $i => $part) {
+                if ($i == 0) {
+                    $compiledPattern .= $part;
+                    continue;
+                }
                 $argName = '$a' . count($args);
+                $compiledPattern .= $argName;
                 $args[] = $argName;
-                return $argName;
-            }, $pattern);
+                $compiledPattern .= $part;
+            }
 
-            $functionBody = 'return function('.implode(',', $args).'){'.($withReturn?'return ':'').$body.';};';
+            $compiledPattern = preg_replace('~(\$[a-z0-9_]*)(\.)([a-z0-9_]+)~i', '$1->$3', $compiledPattern);
 
-//            $body = preg_replace_callback('~\$[a-z0-9_]+(\.)~i', function () { return '=>'; }, $body);
-            $body = preg_replace_callback('~[a-z]+(\.)~i', function () { return '::'; }, $body);
+            $functionBody = 'return function('.implode(',', $args).'){'.($withReturn?'return ':'').$compiledPattern.';};';
 
             self::$phCache[$hash] = eval($functionBody);
 

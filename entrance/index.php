@@ -2,13 +2,13 @@
 
 require_once "../core/framework/init.php";
 
-$value = new Option\Some(100);
+$value = new Option\Some(new Hello);
 
-$value->map("_ / 2")->map("4 ^ _")->filter("_ > 10")->then("Hello::foo(_)");
+$value->map("$.foo()")->then("echo $");
 
 
 class Hello {
-    static function foo($arg) {
-        echo "Foooooo, $arg!";
+    function foo() {
+        return "Some string.";
     }
 }
