@@ -11,6 +11,8 @@ namespace Functional;
 
 class Compiler {
 
+    const VARIABLE_PATTERN = '[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*';
+
     private static $phCache = [];
 
     public static function compile($pattern, $withReturn = false) {
@@ -37,7 +39,8 @@ class Compiler {
                 $compiledPattern .= $part;
             }
 
-            $compiledPattern = preg_replace('~(\$[a-z0-9_]*)(\.)([a-z0-9_]+)~i', '$1->$3', $compiledPattern);
+            $compiledPattern = preg_replace('~(\$'.self::VARIABLE_PATTERN.')(\.)('.self::VARIABLE_PATTERN.')~i',
+                '$1->$3', $compiledPattern);
 
             $functionBody = 'return function('.implode(',', $args).'){'.($withReturn?'return ':'').$compiledPattern.';};';
 
