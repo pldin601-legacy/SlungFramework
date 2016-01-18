@@ -65,6 +65,6 @@ function setting($key, $default = null) {
 
 }
 
-function compile($pattern) {
-    return Functional\Compiler::compile($pattern);
+function compile($pattern, $arguments, $returns) {
+    return Functional\Compiler::compile2($pattern, $arguments, $returns);
 }
