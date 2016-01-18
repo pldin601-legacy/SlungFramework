@@ -2,19 +2,25 @@
 
 require_once "../core/framework/init.php";
 
-$value = new Option\Some(new Hello);
+$collection = [
+    [
+        "id" => 0,
+        "name" => "Bob",
+        "age" => 36
+    ],
+    [
+        "id" => 1,
+        "name" => "Sam",
+        "age" => 17
+    ],
+    [
+        "id" => 2,
+        "name" => "John",
+        "age" => 21
+    ]
+];
 
-$value->map("World::call($)")->then("echo $");
+uasort($collection, compile("$['age'] - $['age']"));
 
-
-class Hello {
-    function foo() {
-        return "Some string.";
-    }
-}
-
-class World {
-    static function call(Hello $hello) {
-        return $hello->foo();
-    }
-}
+header("Content-Type: text/plain");
+print_r($collection);

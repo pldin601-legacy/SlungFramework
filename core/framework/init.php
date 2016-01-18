@@ -16,7 +16,7 @@ spl_autoload_register(function ($className) {
     }
 });
 
-set_exception_handler(function (Exception $exception) {
+set_exception_handler(function ($exception) {
     echo $exception->getMessage();
     echo "<pre>";
     echo $exception->getTraceAsString();

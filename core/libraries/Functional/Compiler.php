@@ -15,34 +15,30 @@ class Compiler {
 
     private static $phCache = [];
 
-    public static function compile($pattern, $withReturn = false) {
+    public static function compile($pattern, $withReturn = true) {
 
         $hash = self::getPatternHash($pattern.":".($withReturn?1:0));
 
         if (!isset(self::$phCache[$hash])) {
 
-            $args = [];
+            $lambdaArgs = [];
 
-            if (strpos($pattern, "$", 0) === false) {
-                throw new \Exception("No placeholder in pattern");
+            if (strpos($pattern, '$', 0) === false) {
+                throw new \Exception('No placeholder in pattern');
             }
-            $parts = explode("$", $pattern);
-            $compiledPattern = "";
-            foreach ($parts as $i => $part) {
-                if ($i == 0) {
-                    $compiledPattern .= $part;
-                    continue;
-                }
-                $argName = '$a' . count($args);
+            $patternParts = explode('$', $pattern);
+            $compiledPattern = array_shift($patternParts);
+            foreach ($patternParts as $patternPart) {
+                $argName = '$a' . count($lambdaArgs);
                 $compiledPattern .= $argName;
-                $args[] = $argName;
-                $compiledPattern .= $part;
+                $lambdaArgs[] = $argName;
+                $compiledPattern .= $patternPart;
             }
 
             $compiledPattern = preg_replace('~(\$'.self::VARIABLE_PATTERN.')(\.)('.self::VARIABLE_PATTERN.')~i',
                 '$1->$3', $compiledPattern);
 
-            $functionBody = 'return function('.implode(',', $args).'){'.($withReturn?'return ':'').$compiledPattern.';};';
+            $functionBody = 'return function('.implode(',', $lambdaArgs).'){'.($withReturn?'return ':'').$compiledPattern.';};';
 
             self::$phCache[$hash] = eval($functionBody);
 
