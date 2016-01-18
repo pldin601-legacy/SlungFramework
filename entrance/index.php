@@ -1,10 +1,10 @@
 <?php
 
-use Functional\Types\Collection;
+use Functional\Types\ImmutableCollection;
 
 require_once "../core/framework/init.php";
 
-$collection = new Collection([
+$collection = new ImmutableCollection([
     [
         "id" => 0,
         "name" => "Bob",
