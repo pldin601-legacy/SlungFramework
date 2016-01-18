@@ -15,6 +15,28 @@ class Compiler {
 
     private static $phCache = [];
 
+    /**
+     * @param string $pattern Pattern to be converted into Closure
+     * @param int $arguments Number of arguments will be passed to Closure
+     * @param boolean $returns Is Closure returns result
+     * @return \Closure
+     */
+    public static function compile2($pattern, $arguments, $returns) {
+        $hash = self::getPatternHash([$pattern, $returns]);
+        if (empty(self::$phCache[$hash])) {
+            $build  = 'return function(';
+            $build .= implode(',', array_map(function ($i) { return '$a' . $i; }, range(1, $arguments, 1)));
+            $build .= '){';
+            if ($returns) {
+                $build .= 'return ';
+            }
+            $build .= preg_replace('~(\$)(\n+?)~', '$1a$2', $pattern);
+            $build .= ';};';
+            self::$phCache[$hash] = eval($build);
+        }
+        return self::$phCache[$hash];
+    }
+
     public static function compile($pattern, $withReturn = true) {
 
         $hash = self::getPatternHash($pattern.":".($withReturn?1:0));
@@ -48,11 +70,11 @@ class Compiler {
 
     }
 
-    public static function getCallableObject($function, $withReturn = true) {
+    public static function getCallableObject($function, $arguments, $returns = true) {
 
         switch (gettype($function)) {
             case 'string':
-                return function_exists($function) ? $function : self::compile($function, $withReturn);
+                return function_exists($function) ? $function : self::compile2($function, $arguments, $returns);
             case 'array':
                 if (count($function) == 2) {
                     if (class_exists($function[0]) || is_object($function[0])) {
@@ -69,9 +91,7 @@ class Compiler {
     }
 
     private static function getPatternHash($pattern) {
-
-        return md5($pattern);
-
+        return md5(serialize($pattern));
     }
 
 }

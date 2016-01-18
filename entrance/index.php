@@ -24,9 +24,9 @@ $collection = new ImmutableCollection([
 
 header("Content-Type: text/plain");
 
-echo $collection                // Original collection of persons
-    ->map('(object) $')         // Cast all persons to objects
-    ->filter('$.age >= 18')     // Filter only adults
-    ->sort('$.age > $.age')     // Sort persons by age
-    ->map('$.name')             // Get person names
-    ->join(', ');               // Get list of names joined by comma delimiter
+echo $collection                 // Original collection of persons
+    ->map('(object) $1')         // Cast all persons to objects
+    ->filter('$1->age >= 18')    // Filter only adults
+    ->sort('$1->age > $2->age')  // Sort persons by age
+    ->map('$->name')             // Get person names
+    ->join(', ');                // Get list of names joined by comma delimiter

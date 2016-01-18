@@ -101,7 +101,7 @@ class None extends Option {
      * @return mixed
      */
     public function getOrCall($callable) {
-        return call_user_func(Compiler::getCallableObject($callable));
+        return call_user_func(Compiler::getCallableObject($callable, 0));
     }
 
     /**
@@ -192,7 +192,7 @@ class None extends Option {
      * @return $this
      */
     public function otherwise($callable) {
-        call_user_func(Compiler::getCallableObject($callable));
+        call_user_func(Compiler::getCallableObject($callable, 0));
         return $this;
     }
 

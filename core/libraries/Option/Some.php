@@ -124,7 +124,7 @@ class Some extends Option {
      * @return $this
      */
     public function map($callable) {
-        return new Some(call_user_func(Compiler::getCallableObject($callable), $this->get()));
+        return new Some(call_user_func(Compiler::getCallableObject($callable, 1), $this->get()));
     }
 
     /**
@@ -132,7 +132,7 @@ class Some extends Option {
      * @return $this
      */
     public function flatMap($callable) {
-        return call_user_func(Compiler::getCallableObject($callable), $this->get());
+        return call_user_func(Compiler::getCallableObject($callable, 1), $this->get());
     }
 
     /**
@@ -140,7 +140,7 @@ class Some extends Option {
      * @return $this
      */
     public function filter($predicate) {
-        return call_user_func(Compiler::getCallableObject($predicate), $this->get()) ? $this : None::getInstance();
+        return call_user_func(Compiler::getCallableObject($predicate, 1), $this->get()) ? $this : None::getInstance();
     }
 
     /**
@@ -180,7 +180,7 @@ class Some extends Option {
      * @return $this
      */
     public function then($callable) {
-        call_user_func(Compiler::getCallableObject($callable, false), $this->get());
+        call_user_func(Compiler::getCallableObject($callable, 1, false), $this->get());
         return $this;
     }
 

@@ -19,17 +19,17 @@ class ImmutableCollection implements Collection {
     }
 
     public function map($callable) {
-        return new self(array_map(Compiler::getCallableObject($callable), $this->container));
+        return new self(array_map(Compiler::getCallableObject($callable, 1), $this->container));
     }
     public function filter($callable) {
-        return new self(array_values(array_filter($this->container, Compiler::getCallableObject($callable))));
+        return new self(array_values(array_filter($this->container, Compiler::getCallableObject($callable, 1))));
     }
     public function reduce($callable, $initial = null) {
-        return array_reduce($this->container, Compiler::getCallableObject($callable), $initial);
+        return array_reduce($this->container, Compiler::getCallableObject($callable, 2), $initial);
     }
     public function sort($callable) {
         $copy = $this->container;
-        uasort($copy, Compiler::getCallableObject($callable));
+        uasort($copy, Compiler::getCallableObject($callable, 2));
         return new self($copy);
     }
     public function join($string) {
