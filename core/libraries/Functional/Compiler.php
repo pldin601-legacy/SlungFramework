@@ -30,7 +30,7 @@ class Compiler {
             if ($returns) {
                 $build .= 'return ';
             }
-            $build .= preg_replace('~(\$)(\n+?)~', '$1a$2', $pattern);
+            $build .= preg_replace('~(\$)(\d+)~', '$1a$2', $pattern);
             $build .= ';};';
             self::$phCache[$hash] = eval($build);
         }
