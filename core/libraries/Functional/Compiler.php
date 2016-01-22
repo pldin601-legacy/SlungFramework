@@ -11,7 +11,14 @@ namespace Functional;
 
 class Compiler {
 
+    const FUNCTION_VARIABLES_COUNT      = 1;
+    const BI_FUNCTION_VARIABLES_COUNT   = 2;
+    const CONSUMER_VARIABLES_COUNT      = 1;
+    const BI_CONSUMER_VARIABLES_COUNT   = 2;
+    const PRODUCER_VARIABLES_COUNT      = 0;
+
     const VARIABLE_PATTERN = '[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*';
+    const PLACEHOLDER_TEMPLATE          = '~(\$)(\d+)~';
 
     private static $phCache = [];
 
@@ -21,11 +28,11 @@ class Compiler {
      * @param boolean $returns Is Closure returns result
      * @return \Closure
      */
-    public static function compile2($pattern, $arguments, $returns) {
+    public static function compile($pattern, $arguments, $returns) {
         $hash = self::getPatternHash([$pattern, $returns]);
         if (empty(self::$phCache[$hash])) {
             $build  = 'return function(';
-            $build .= implode(',', array_map(function ($i) { return '$a' . $i; }, range(1, $arguments, 1)));
+            $build .= self::generateVariablesList($arguments);
             $build .= '){';
             if ($returns) {
                 $build .= 'return ';
@@ -37,44 +44,47 @@ class Compiler {
         return self::$phCache[$hash];
     }
 
-    public static function compile($pattern, $withReturn = true) {
+    public static function compileFunction($pattern) {
+        $code = 'return function(' . self::generateVariablesList(1) . '){return ' . preg_replace(self::PLACEHOLDER_TEMPLATE, '$1a$2', $pattern) . ';};';
+        return eval($code);
+    }
 
-        $hash = self::getPatternHash($pattern.":".($withReturn?1:0));
+    public static function compileBiFunction($pattern) {
+        $code = 'return function(' . self::generateVariablesList(2) . '){return ' . preg_replace(self::PLACEHOLDER_TEMPLATE, '$1a$2', $pattern) . ';};';
+        return eval($code);
+    }
 
-        if (!isset(self::$phCache[$hash])) {
+    public static function compileConsumer($pattern) {
+        $code = 'return function(' . self::generateVariablesList(1) . '){' . preg_replace(self::PLACEHOLDER_TEMPLATE, '$1a$2', $pattern) . ';};';
+        return eval($code);
+    }
 
-            $lambdaArgs = [];
+    public static function compileBiConsumer($pattern) {
+        $code = 'return function(' . self::generateVariablesList(2) . '){' . preg_replace(self::PLACEHOLDER_TEMPLATE, '$1a$2', $pattern) . ';};';
+        return eval($code);
+    }
 
-            if (strpos($pattern, '$', 0) === false) {
-                throw new \Exception('No placeholder in pattern');
-            }
-            $patternParts = explode('$', $pattern);
-            $compiledPattern = array_shift($patternParts);
-            foreach ($patternParts as $patternPart) {
-                $argName = '$a' . count($lambdaArgs);
-                $compiledPattern .= $argName;
-                $lambdaArgs[] = $argName;
-                $compiledPattern .= $patternPart;
-            }
+    public static function compileProducer($pattern) {
+        $code = 'return function(){return ' . preg_replace(self::PLACEHOLDER_TEMPLATE, '$1a$2', $pattern) . ';};';
+        return eval($code);
+    }
 
-            $compiledPattern = preg_replace('~(\$'.self::VARIABLE_PATTERN.')(\.)('.self::VARIABLE_PATTERN.')~i',
-                '$1->$3', $compiledPattern);
-
-            $functionBody = 'return function('.implode(',', $lambdaArgs).'){'.($withReturn?'return ':'').$compiledPattern.';};';
-
-            self::$phCache[$hash] = eval($functionBody);
-
+    /**
+     * @param int $count
+     * @return string
+     */
+    public static function generateVariablesList($count) {
+        $variables = [];
+        for ($i = 0; $i < $count; $i ++) {
+            $variables[] = '$a' . $i;
         }
-
-        return self::$phCache[$hash];
-
+        return implode(',', $variables);
     }
 
     public static function getCallableObject($function, $arguments, $returns = true) {
-
         switch (gettype($function)) {
             case 'string':
-                return function_exists($function) ? $function : self::compile2($function, $arguments, $returns);
+                return function_exists($function) ? $function : self::compile($function, $arguments, $returns);
             case 'array':
                 if (count($function) == 2) {
                     if (class_exists($function[0]) || is_object($function[0])) {
@@ -85,9 +95,7 @@ class Compiler {
             case 'object':
                 return $function;
         }
-
         throw new \Exception('unsupported $callable');
-
     }
 
     private static function getPatternHash($pattern) {
